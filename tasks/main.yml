@@ -1,6 +1,33 @@
 ---
-# tasks file for Apache Kafka
+# tasks file for roles/kafka
 - name: Update Repositories
   become: yes
   apt:
     update_cache: yes
+
+- name: Create Kafka automation directories
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - '/root/.kafka_automate'
+
+- name: Upload kafka_init.sh File
+  become: yes
+  copy:
+    src: kafka_init.sh
+    dest: /root/.kafka_automate/kafka_init.sh
+
+- name: Change permissions on kafka_init.sh
+  become: yes
+  file:
+    path: /root/.kafka_automate/kafka_init.sh
+    mode: "u+rwx"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Run Kafka Initialization script
+  become: yes
+  command: /root/.kafka_automate/kafka_init.sh
+  args:
+    executable: /bin/bash
